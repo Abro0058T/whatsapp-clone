@@ -1,20 +1,48 @@
+import { reducerCases } from "@/context/constants";
+import { useStateProvider } from "@/context/StateContext";
 import { CHECK_USER_ROUTE } from "@/utils/ApiRoutes";
 import { firebaseAuth } from "@/utils/FirebaseConfig";
 import axios from "axios";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import Image from "next/image";
-import React from "react";
+import { useRouter } from "next/router";
+import React, { useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
 
 function login() {
+  const  router=useRouter()
+  const [{userInfo,newUser},dispatch]=useStateProvider()
+
+  useEffect(()=>{
+    if(userInfo?.id && !newUser) router.push("/")
+  },[userInfo,newUser])
+
   const handleLogin=async ()=>{
     const provider=new GoogleAuthProvider()
     const {user:{displayName:name,email,photoURL:profileImage}}=await signInWithPopup(firebaseAuth,provider)
-    console.log(email)
+    console.log(name)
     try{
       if(email){
-        const {data}=await axios.post(CHECK_USER_ROUTE,{email});
-        console.log({data})
+        console.log("here")
+        const {data}=await axios.post("http://localhost:3005/api/auth/check-user",{email});
+        
+        if(!data.status){
+          dispatch({type:reducerCases.SET_NEW_USER,newUser:true})
+          dispatch({
+            type: reducerCases.SET_USER_INFO,useInfo:{
+              name, email,profileImage,status:""
+            }
+          })
+          router.push("/onboarding")
+        }else {
+          const {id,name,email,profilePicture:profileImage,status}=data.data;
+          dispatch({
+            type: reducerCases.SET_USER_INFO,useInfo:{
+            id,name,email,profileImage,status
+            }
+          })
+          router.push("/")
+        }
       }
     }catch(error){
       console.log("here")
