@@ -4,13 +4,24 @@ import {ImAttachment} from "react-icons/im"
 import { MdSend } from "react-icons/md";
 import { FaMicrophone } from "react-icons/fa";
 import { useStateProvider } from "@/context/StateContext";
+import { ADD_MESSAGE_ROUTE } from "@/utils/ApiRoutes";
+import axios from "axios";
 
 function MessageBar() {
 
   const [{userInfo,currentChatUser}]=useStateProvider()
   const [message, setmessage] = useState("")
-  const sendMessage = () => {
-alert(message)
+  const sendMessage = async () => {
+    try{
+      const {data}=await axios.post(ADD_MESSAGE_ROUTE,{
+        to:currentChatUser?.id,
+        from:userInfo?.id,
+        message
+      })
+      setmessage("");
+    }catch(error){
+      console.log(error)
+    }
   };
 
   return <div className="bg-panel-header-background h-20 px-4 flex items-center gap-6 relative">
@@ -49,5 +60,3 @@ alert(message)
 
 export default MessageBar;
 
-
-//4:30:00
