@@ -9,7 +9,7 @@ import axios from "axios";
 
 function MessageBar() {
 
-  const [{userInfo,currentChatUser}]=useStateProvider()
+  const [{userInfo,currentChatUser,socket}]=useStateProvider()
   const [message, setmessage] = useState("")
   const sendMessage = async () => {
     try{
@@ -17,6 +17,11 @@ function MessageBar() {
         to:currentChatUser?.id,
         from:userInfo?.id,
         message
+      })
+      socket.current.emit("send-msg",{
+        to:currentChatUser?.id,
+        from:userInfo?.id,
+        message:data.message,
       })
       setmessage("");
     }catch(error){
